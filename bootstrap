@@ -1,0 +1,58 @@
+#!/bin/sh
+
+#SET BOOTSTRAP DEPS FOLDER
+DEPS_FOLDER=deps
+SOURCES=${DEPS_FOLDER}/src
+PREFIX=/usr
+export CPPFLAGS="$CPPFLAGS -I${PREFIX}/include"
+export LDFLAGS="$LDFLAGS -L${PREFIX}/lib" 
+
+FFMPEG_ARGS="--prefix=$PREFIX --enable-nonfree --enable-gpl --enable-version3 --enable-shared --enable-static \
+  --enable-runtime-cpudetect --disable-doc --disable-ffmpeg --disable-ffplay --disable-ffprobe \
+  --disable-ffserver --disable-avdevice --disable-avfilter --enable-swresample \
+  --disable-avresample --enable-pthreads --disable-dxva2 --disable-vdpau --disable-postproc \
+  --disable-encoders --disable-muxers --disable-devices --disable-filters --disable-debug"
+#TODO: fix --enable-libx264  
+  
+kern=`uname -s`
+if test $kern = "Darwin"
+then
+  echo "Building for OS X"
+  CFLAGS="-DHAVE_LRINTF"
+  FFMPEG_ARGS="$FFMPEG_ARGS --enable-vda --disable-vaapi --cc=clang"
+elif test $kern = "Linux"
+then
+  echo "Building for Linux"
+  FFMPEG_ARGS="$FFMPEG_ARGS --disable-vda --enable-vaapi"
+fi
+
+mkdir $SOURCES
+
+## DOWNLOAD X264
+cd $DEPS_FOLDER
+curl -#LO ftp://ftp.videolan.org/pub/x264/snapshots/last_x264.tar.bz2
+cd ..
+
+# Unpack files
+for file in `ls ${DEPS_FOLDER}/*.tar.*`; do
+    tar -v -xzf $file -C ${SOURCES}
+done
+
+rm -rf $DEPS_FOLDER/last_x264.tar.bz2
+
+cd $SOURCES
+
+## BUILD DEPS
+cd yasm-*/
+./configure --prefix=$PREFIX && make -j 4 && sudo make install; cd ..
+
+cd x264-*/
+CFLAGS="-I. -fno-common -read_only_relocs suppress" ./configure --prefix=$PREFIX --enable-pic --enable-static --enable-shared && make -j 4 && sudo make install; 
+sudo cp libx264.a $PREFIX/lib/
+cd ..
+
+cd ffmpeg-*/
+make distclean; ./configure $FFMPEG_ARGS && make -j 6 && sudo make install; cd ..
+
+
+cd ..

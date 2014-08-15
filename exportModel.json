@@ -1,0 +1,38 @@
+{
+	"title": "album name",
+  "year": 2004,
+  "genre": "album genre",
+  "mood": "album mood",
+  "label": "album label",
+  "cover": "cover file name",
+  "GTIN": "album gtin",
+
+  "albumArtist": {
+      "name": "album artist",
+      "fanart": "fanart.jpg",
+    },
+
+
+  "media": [
+      {
+        "track": 01,
+        "title": "the song title",
+        "length": "04:20",
+        "label": "song label",
+        "year": 2004,
+        "ISRC": "123450987627",
+        "fileName": "filename.mp3",
+        "type": "music"        
+      },
+      {
+        "track": 01,
+        "title": "the song title",
+        "length": "03:45",
+        "label": "song label",
+        "year": 2004,
+        "ISRC": "123450987627",
+        "fileName": "filename.mpg",
+        "type": "musicVideo"        
+      }
+  ] 
+}
