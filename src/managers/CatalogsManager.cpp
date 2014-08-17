@@ -62,7 +62,8 @@ bool CCatalogsManager::createTables()
      "iAlbumCount integer NOT NULL DEFAULT 0,"                \
      "iArtistCount integer NOT NULL DEFAULT 0,"               \
      "iSongCount integer NOT NULL DEFAULT 0,"                 \
-     "iAutoRebuild integer NOT NULL DEFAULT 0);"              \
+     "iAutoRebuild integer NOT NULL DEFAULT 0,"               \
+     "strDBFileName text NOT NULL);"                          \
   );
   return bResult;
 }

@@ -47,6 +47,38 @@ void CApplication::moveMouse(int x, int y){
   QCursor::setPos(x,y);
 }
 
+int CApplication::listQRC(){
+  QString strDebug;
+  strDebug = "Listing Albums";
+  qDebug() << strDebug;
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - BIG ONES.rcc");
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT OUTTAKES.rcc");
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT VACATION.rcc");
+
+  QDirIterator it(":", QDirIterator::Subdirectories);
+  while (it.hasNext()) {
+    strDebug += "\n"+it.next();
+  }
+
+  //Save PLX file
+  QFile file ("..\debug.txt");
+  if (!file.open(QFile::WriteOnly | QFile::Text)) return false;
+  QTextStream outstream(&file);
+  outstream << strDebug;
+  file.close();
+
+  qDebug() << strDebug;
+
+//  QFile f(":/AEROSMITH - PERMANENT VACATION/playlist.plx");
+//  if (f.open(QFile::ReadOnly | QFile::Text))
+//  {
+//    QTextStream in(&f);
+//    qDebug() << f.size() << in.readAll();
+//    f.close();
+//  }
+
+}
+
 void CApplication::initialize()
 {
   loadingProgress(0);
@@ -90,13 +122,17 @@ void CApplication::load()
 
     if ( m_catalogsManager->currentCatalog()->data(CCatalog::FIELD_AUTOREBUILD).toBool() || CMusicDatabase::instance()->isEmpty() )
       rebuildDatabase();
-    else
+    else{
       loadViews();
+      ThreadManager::instance()->startFanartSearch();
+      emit ThreadManager::instance()->dbBuildFinished();
+    }
 
 //    ThreadManager::instance()->stopThread();
-//    ThreadManager::instance()->startFanartSearch();
-//    emit ThreadManager::instance()->dbBuildFinished();    
-//    loadingProgress(100);
+//    connect(ThreadManager::instance(), SIGNAL(fanartSearchProgress(int)), this, SLOT(loadingProgress(int)) );
+//    connect(ThreadManager::instance(), SIGNAL(coverSearchProgress(int)), this, SLOT(loadingProgress(int)) );
+
+    loadingProgress(100);
   }
 }
 
@@ -108,6 +144,7 @@ void CApplication::rebuildDatabase()
 
   connect(ThreadManager::instance(), SIGNAL(dbBuildFinished()), this, SLOT(loadViews()) );
   connect(ThreadManager::instance(), SIGNAL(dbBuildProgress(int)), this, SLOT(loadingProgress(int)) );
+
 
   if (m_catalogsManager->currentCatalog())
     ThreadManager::instance()->databaseBuild( m_catalogsManager->currentCatalog()->data(CCatalog::FIELD_SOURCE).toString() );
@@ -125,6 +162,18 @@ void CApplication::loadingProgress(int i){
     emit loaded();
 }
 
+void CApplication::updateSearchProgress(QString strMessage, QString strContent, int progress, int total){
+  qDebug() << strMessage << strContent << progress << total;
+  CGUIDialog* dialog = new CGUIDialog(rootObject(), this);
+  dialog->showSearchProgress(strMessage, strContent, progress, total);
+}
+
+
+void CApplication::showProgressDialog(){
+  CGUIDialog* dialog = new CGUIDialog(rootObject(), this);
+  dialog->showProgress("Aguarde...");
+}
+
 void CApplication::keyPressEvent(QKeyEvent *e)
 {
   switch (e->key())
@@ -132,12 +181,24 @@ void CApplication::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Asterisk:
     {
       CGUIDialog* dialog = new CGUIDialog(rootObject(), this);
-      dialog->show("passo o dia passo a noite cheirando suvaco\n"
-                   "o seu peido fede tanto to até suado\n"
-                   "seu chulé ta azendando tô até com azia\n"
-                   "e esse bafo de cavalo? vá escovar na pia!\n"
-                   "IÊEEEEE IÊEEEE\n"
-                   "By: Paulo Pina","E AGORA, UM POEMA =)");      
+//      dialog->show("passo o dia passo a noite cheirando suvaco\n"
+//                   "o seu peido fede tanto to até suado\n"
+//                   "seu chulé ta azendando tô até com azia\n"
+//                   "e esse bafo de cavalo? vá escovar na pia!\n"
+//                   "IÊEEEEE IÊEEEE\n"
+//                   "By: Paulo Pina","E AGORA, UM POEMA =)");
+      dialog->show("Plexus Jukebox Manager\n"
+                   "\n"
+                   "Paulo Pina\n"
+                   "31 8477 2246\n"
+                   "paulopina@plexusdynamics.com.br\n"
+                   "www.plexusjukebox.com.br", "SOBRE");
+    }
+    break;
+    case Qt::Key_Home:
+    {
+      CGUIDialog* dialog = new CGUIDialog(rootObject(), this);
+      dialog->showProgress("Aguarde...");
     }
     break;
 

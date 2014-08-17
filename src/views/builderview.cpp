@@ -81,11 +81,10 @@ ListModel* CBuilderView::artistMenu()
     CArtistItem* pItem = new CArtistItem(m_artistList);
     pItem->setData( CArtistItem::FIELD_ID, query.value(0) );
     pItem->setData( CArtistItem::FIELD_NAME, query.value(1) );
-    pItem->setData( CArtistItem::FIELD_FANART, fanartPath + query.value(2).toString() );
+    pItem->setData( CArtistItem::FIELD_FANART, "file:///"+fanartPath + query.value(2).toString() );
 
     m_artistList->appendRow(pItem);
   }
-
   return m_artistList;
 }
 
@@ -98,6 +97,7 @@ ListModel* CBuilderView::albums(int idArtist)
   qDebug() << strSQL;
   QSqlQuery query(strSQL, *m_musicDatabase->db());
 
+  qDebug() << "Loading Albums for Artist: " << query.value(4);
   while (query.next())
   {
     CAlbumItem* pItem = new CAlbumItem(albums);
@@ -105,9 +105,10 @@ ListModel* CBuilderView::albums(int idArtist)
     pItem->setData( CAlbumItem::FIELD_TITLE, query.value(1) );
     pItem->setData( CAlbumItem::FIELD_YEAR, query.value(2) );
     pItem->setData( CAlbumItem::FIELD_ARTIST, query.value(4) );
-    pItem->setData( CAlbumItem::FIELD_COVER, coversPath + query.value(5).toString() );
+    pItem->setData( CAlbumItem::FIELD_COVER, "file:///"+coversPath + query.value(5).toString() );
 
     albums->appendRow(pItem);
+    qDebug() << "Album: " << query.value(1);
   }
 
   return albums;

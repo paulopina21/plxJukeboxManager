@@ -9,6 +9,7 @@
 //#include "Widget/statuswidget.h"
 
 //#include "PFCGenerator/PFCGenerator.h"
+#include "Application.h"
 
 #include <QSignalMapper>
 #include <QDebug>
@@ -51,7 +52,7 @@ ThreadManager::~ThreadManager()
   delete m_databaseBuilder;
   //    delete m_collectionPopulator;
   delete m_threadPool;
-  delete m_PFCGenerator;
+//  delete m_PFCGenerator;
 }
 
 
@@ -224,7 +225,7 @@ void ThreadManager::startCoverSearch()
     m_coverThread = new CoverThread();
 
     connect(m_coverThread,SIGNAL(finished()),this,SLOT(coverSearchFinished()));
-    connect(m_coverThread,SIGNAL(progress(int)),this,SLOT(coverSearchProgress(int)));
+    connect(m_coverThread,SIGNAL(progress(QString, QString, int, int)), this, SLOT(coverSearchProgress(QString, QString, int, int)));
   }
 
   if(m_coverThread->isRunning())
@@ -258,8 +259,9 @@ void ThreadManager::coverSearchFinished()
 //    StatusWidget::instance()->stopProgressMessage( messageIds.take("CoverUpdate") );
 }
 
-void ThreadManager::coverSearchProgress(int progress)
+void ThreadManager::coverSearchProgress(QString strMessage, QString strAlbum, int progress, int total)
 {
+  CApplication::instance()->updateSearchProgress(strMessage, strAlbum, progress, total);
 //  QString message = QString(tr("Fetching Album Cover") + " (%1%)").arg(QString::number(progress));
 //  StatusWidget::instance()->updateProgressMessage( messageIds.value("CoverUpdate"), message );
 }
@@ -275,7 +277,7 @@ void ThreadManager::startFanartSearch()
     m_fanartThread = new FanartThread();
 
     connect(m_fanartThread,SIGNAL(finished()), this, SLOT(fanartSearchFinished()));
-    connect(m_fanartThread,SIGNAL(progress(int)), this, SLOT(fanartSearchProgress(int)));
+    connect(m_fanartThread,SIGNAL(progress(QString, QString, int, int)), this, SLOT(fanartSearchProgress(QString, QString, int, int)));
   }
 
   if(m_fanartThread->isRunning())
@@ -310,8 +312,9 @@ void ThreadManager::fanartSearchFinished()
 //    StatusWidget::instance()->stopProgressMessage( messageIds.take("FanartUpdate") );
 }
 
-void ThreadManager::fanartSearchProgress(int progress)
+void ThreadManager::fanartSearchProgress(QString strMessage, QString strArtist, int progress, int total)
 {
+  CApplication::instance()->updateSearchProgress(strMessage, strArtist, progress, total);
 //  QString message = QString(tr("Fetching Album Fanart") + " (%1%)").arg(QString::number(progress));
 //  StatusWidget::instance()->updateProgressMessage( messageIds.value("FanartUpdate"), message );
 }

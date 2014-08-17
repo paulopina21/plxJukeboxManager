@@ -166,8 +166,9 @@ Panel
 
     onClicked:
     {
-      application.rebuildDatabase()
-//      application.mainModel.listAlbums();
+//      application.rebuildDatabase()
+      application.mainModel.listAlbums();
+      console.log("Listing Albums")
     }
   }
 

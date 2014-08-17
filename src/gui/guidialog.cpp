@@ -23,6 +23,15 @@ void CGUIDialog::show(const QString& strMessage, const QString &strTitle)
 //  QMetaObject::invokeMethod(object, "setBlurTarget", Q_ARG(QObject*, loader_main));
 }
 
+void CGUIDialog::showProgress(const QString &strTitle)
+{
+  QMetaObject::invokeMethod(m_qmlRoot, "showProgressDialog", Q_ARG(QVariant, strTitle));
+}
+
+void CGUIDialog::showSearchProgress(const QString& strMessage, const QString& strContent, const int& progress, const int& total){
+  QMetaObject::invokeMethod(m_qmlRoot, "showSearchProgress", Q_ARG(QVariant, strMessage), Q_ARG(QVariant, strContent), Q_ARG(QVariant, progress), Q_ARG(QVariant, total));
+}
+
 void CGUIDialog::deleteObject()
 {
 //  delete m_qmlObject;

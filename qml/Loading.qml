@@ -1,8 +1,8 @@
 import QtQuick 2.2
-import QtQuick.Particles 2.0
+//import QtQuick.Particles 2.0
 import QtGraphicalEffects 1.0
 
-import "../qml/utils.js" as Utils
+import "utils.js" as Utils
 import "components"
 import "components/dynamicBackground"
 
@@ -25,9 +25,9 @@ Rectangle
       if (application.progress == 100)
       {
         if (application.isCatalogSelected())
-          loader_main.source = "albumbuilder/MainView.qml";
+          loader_main.source = "qrc:/qml/albumbuilder/MainView.qml";
         else{
-          loader_main.source = "ViewEmpty.qml";
+          loader_main.source = "qrc:/qml/ViewEmpty.qml";
         }
       }
     }
@@ -58,7 +58,7 @@ Rectangle
   Component.onCompleted:
   {
     var randr = Utils.getRandom(1,9);
-    var folder = "components/dynamicBackground/";
+    var folder = "qrc:/qml/components/dynamicBackground/";
 //      if (valentinesDay)
 //      {
 //        source = folder + "Heart.qml"; return;

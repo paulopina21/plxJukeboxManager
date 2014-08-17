@@ -77,6 +77,7 @@ void CoverThread::run()
 void CoverThread::searchFinished()
 {
   qDebug() << "CoverManager -> Finished";
+  emit progress ( "Atualizando capas de álbuns", "Finalizando", m_iMax, m_iMax);
   emit finished();
   exit();
 }
@@ -96,7 +97,8 @@ void CoverThread::processSearch()
     return;
   }
 
-  emit progress ( ( (m_iMax - m_workList.size()) * 100)/m_iMax );
+//  emit progress ( ( (m_iMax - m_workList.size()) * 100)/m_iMax );
+  emit progress ( "Atualizando capas de álbuns", m_currentWork[ARTIST].toString() + " - " + m_currentWork[TITLE].toString(), (m_iMax - m_workList.size()), m_iMax);
 
   m_currentWork = m_workList.takeFirst();
 
@@ -147,6 +149,10 @@ void CoverThread::checkDatabase()
   int count = 0;
   int timeStamp(QDateTime::currentDateTime().toTime_t() - 259200/*3 days in miliseconds*/);
 
+  QSqlQuery queryCount("SELECT count(idFanart) FROM fanartview WHERE ((iTimeStamp is NULL) or (iTimeStamp < "+QString::number(timeStamp)+")) ORDER BY strArtist",*m_musicDatabase->db());
+  queryCount.first();
+  int total = queryCount.value(0).toInt();
+
   QSqlQuery query("SELECT idCover, strArtist, strAlbum, strCover, strThumb FROM coverview WHERE ((iTimeStamp is NULL) or (iTimeStamp < "+QString::number(timeStamp)+")) ORDER BY strArtist, strAlbum",*m_musicDatabase->db());
   while (query.next())
   {
@@ -167,6 +173,7 @@ void CoverThread::checkDatabase()
       qDebug() << "INFO: CoverThread -> Selecting to search ";
     }
     count++;
+    emit progress ( "Verificando capas de álbuns", query.value(1).toString(), count, total );
   } // fin while album query
 //  m_musicDatabase->close();
 }

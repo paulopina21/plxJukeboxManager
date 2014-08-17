@@ -15,17 +15,21 @@ int main(int argc, char *argv[])
 
     new CLog(LOG_INFO, qApp->applicationDirPath() +"/application.log");
     CLog::log(LOG_INFO, "PLEXUS", "Hello World");
+    qDebug() << qApp->libraryPaths();
 
     CApplication* application = new CApplication();
 
     QQmlContext* context = application->rootContext();
-    context->setContextProperty("screenGeometry", application->screen()->geometry());
+    context->setContextProperty("screenGeometry", application->screen()->availableGeometry());
     context->setContextProperty("application", application);
 
-    application->setSource(QUrl("../Resources/qml/main.qml"));
-    application->setFlags(Qt::WindowFullscreenButtonHint);
+//    application->setSource(QUrl("..Resources/qml/main.qml"));
+    application->setSource(QUrl("qrc:/qml/main.qml"));
+
+//    application->setFlags(Qt::WindowFullscreenButtonHint);
     application->connect(application->engine(), SIGNAL(quit()), SLOT(close()));
-    application->showFullScreen();
+//    |application->showFullScreen();
+    application->showMaximized();
 
     return app.exec();
 }

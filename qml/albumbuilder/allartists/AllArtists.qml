@@ -84,7 +84,6 @@ Item
       image.fallback: "qrc:/images/backgrounds/plexus.jpg"
       details.height: 100;
 
-
       Component.onCompleted:
       {
         details.setSource("Details.qml", { "idArtist": id } );

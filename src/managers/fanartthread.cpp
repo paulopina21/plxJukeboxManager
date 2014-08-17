@@ -76,6 +76,7 @@ void FanartThread::run()
 void FanartThread::searchFinished()
 {
   qDebug() << "FanartManager -> Finished";
+  emit progress ( "Atualizando imagens de fundo", "Finalizando", m_iMax, m_iMax);
   emit finished();
   exit();
 }
@@ -94,9 +95,10 @@ void FanartThread::processSearch()
     return;
   }
 
-  emit progress ( ( (m_iMax - m_workList.size()) * 100)/m_iMax );
 
   m_currentWork = m_workList.takeFirst();
+  //  emit progress ( ( (m_iMax - m_workList.size()) * 100)/m_iMax );
+  emit progress ( "Atualizando imagens de fundo", m_currentWork[ARTIST].toString(), (m_iMax - m_workList.size()), m_iMax);
 
   //! set providers
   m_providers.append( new CPlexusArtist() );
@@ -146,6 +148,10 @@ void FanartThread::checkDatabase()
   int count = 0;
   int timeStamp(QDateTime::currentDateTime().toTime_t() - 259200/*3 days in miliseconds*/);
 
+  QSqlQuery queryCount("SELECT count(idFanart) FROM fanartview WHERE ((iTimeStamp is NULL) or (iTimeStamp < "+QString::number(timeStamp)+")) ORDER BY strArtist",*m_musicDatabase->db());
+  queryCount.first();
+  int total = queryCount.value(0).toInt();
+
   QSqlQuery query("SELECT idFanart, strArtist, strFanart, strThumb FROM fanartview WHERE ((iTimeStamp is NULL) or (iTimeStamp < "+QString::number(timeStamp)+")) ORDER BY strArtist",*m_musicDatabase->db());
   while (query.next())
   {
@@ -165,6 +171,7 @@ void FanartThread::checkDatabase()
       qDebug() << "INFO: FanartThread -> Selecting to search ";
     }
     count++;
+    emit progress ( "Verificando imagens de fundo", query.value(1).toString(), count, total );
   } // fin while album query
 //  m_musicDatabase->close();
 }

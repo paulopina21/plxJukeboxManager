@@ -47,7 +47,7 @@ private:
   CMusicDatabase*    m_musicDatabase;
 signals:
   void finished();
-  void progress(int);
+  void progress(QString, QString, int, int);
 };
 
 #endif // COVERTHREAD_H

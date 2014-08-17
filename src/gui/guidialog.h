@@ -10,6 +10,8 @@ class CGUIDialog: public QObject
 public:
   CGUIDialog(QQuickItem *root, QObject * parent = 0);
   void show(const QString& strMessage, const QString& strTitle = "");
+  void showProgress(const QString& strTitle = "");
+  void showSearchProgress(const QString& strMessage, const QString& strContent, const int& progress, const int& total);
 
 public slots:
   void deleteObject();

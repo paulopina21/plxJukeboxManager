@@ -71,6 +71,7 @@ private:
   bool xmlBuild(CMediaItem* mediaItem);
   bool qrcBuild(CMediaItem* mediaItem);
   bool rccBuild(CMediaItem* mediaItem);
+  bool removeDir(const QString & dirName);
 
   QString m_albumDir;
   QString m_plxFile;

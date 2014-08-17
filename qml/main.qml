@@ -1,5 +1,6 @@
 import QtQuick 2.2
 import QtGraphicalEffects 1.0
+import QtQuick.Window 2.1
 
 import "components"
 
@@ -14,17 +15,33 @@ Rectangle
   id: container_main
   objectName: "container_main"
   width: screenGeometry.width;
-  height: screenGeometry.height;
+  height: screenGeometry.height -20;
   color: "black"
 
   ConfigInfo { id: config; objectName: "config"}
 
   function showDialog(msg, title)
   {
-    loader_dialog.source = "components/Dialog.qml";
+    loader_dialog.source = "qrc:/qml/components/Dialog.qml";
     loader_dialog.item.content = msg;
     loader_dialog.item.title = title;
     loader_dialog.item.setBlurTarget(loader_main);
+  }
+
+  function showProgressDialog(title)
+  {
+    loader_dialog.source = "qrc:/qml/components/ProgressDialog.qml";
+    loader_dialog.item.title = title;
+    loader_dialog.item.setBlurTarget(loader_main);
+    console.log("TESTE 9")
+  }
+
+  function showSearchProgress(message, content, progress, total)
+  {
+    searchProgress.strMessage = message;
+    searchProgress.strContent = content;
+    searchProgress.iProgress  = (progress * 100) / total;
+    console.log(searchProgress.strMessage, searchProgress.strContent, searchProgress.iProgress);
   }
 
   Image
@@ -60,7 +77,7 @@ Rectangle
 //    radius: 32
 //    samples: 16
 
-//  }  
+//  }
 
   Loader
   {
@@ -68,7 +85,103 @@ Rectangle
     objectName: "loader_main"
     anchors.fill: parent
     focus: true
-    source: "Loading.qml"
+    source: "qrc:/qml/Loading.qml"
+  }
+
+  Rectangle{
+    id: searchProgress
+
+    property string strMessage;
+    property string strContent;
+    property int iProgress;
+
+    anchors.top: parent.top
+    anchors.right: parent.right
+    anchors.topMargin: 50
+    anchors.rightMargin: 40
+
+    color: "black"
+
+    width: 300
+    height: 50
+
+    opacity: (iProgress == 100) ? 0 : (iProgress <= 0) ? 0 : 0.4
+
+    Behavior on opacity { PropertyAnimation{ duration: 300 } }
+
+    ShadowText{
+      id: searchProgress_message
+      anchors.top: parent.top
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.topMargin: 2
+      anchors.leftMargin: 5
+
+      text: searchProgress.strMessage
+      wrapMode: Text.WordWrap
+      textHAlignment: Text.AlignHCenter
+      pixelSize: 10
+    }
+
+    Rectangle{
+      id: searchProgress_bar
+      anchors.left: parent.left
+      anchors.leftMargin: 5
+      anchors.right: parent.right
+      anchors.rightMargin: 5
+
+      anchors.top: searchProgress_message.bottom
+      anchors.topMargin: 2
+
+      height: 15
+      color:"#000000"
+
+      border.color: "#ffffff"
+      border.width: 1
+
+      Rectangle{
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.margins: parent.border.width
+
+        width: ((parent.width / 100) * searchProgress.iProgress) - (anchors.margins*2)
+        color: "#00AA00"
+        Behavior on width { PropertyAnimation{ duration: 300 } }
+      }
+
+      ShadowText
+      {
+        id: searchProgress_percent
+        anchors.fill: parent
+
+        textHAlignment: Text.AlignHCenter
+        textVAlignment: Text.AlignVCenter
+        pixelSize: 10
+
+        text: searchProgress.iProgress + "%"
+      }
+    }
+
+    ShadowText{
+      id: searchProgress_content
+      anchors.top: searchProgress_bar.bottom
+      anchors.left: parent.left
+      anchors.right: parent.right
+      anchors.bottom: parent.bottom
+      anchors.topMargin: 2
+      anchors.leftMargin: 5
+
+      text: searchProgress.strContent
+      pixelSize: 10
+    }
+
+    MouseArea{
+      anchors.fill: parent;
+      hoverEnabled: true;
+      onEntered: parent.opacity = (parent.iProgress == 100) ? 0 : (parent.iProgress <= 0) ? 0 : 0.8
+      onExited: parent.opacity = (parent.iProgress == 100) ? 0 : (parent.iProgress <= 0) ? 0 : 0.4
+    }
   }
 
   Loader

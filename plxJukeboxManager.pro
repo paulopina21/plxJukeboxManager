@@ -2,7 +2,8 @@
 folder_01.source = qml
 DEPLOYMENTFOLDERS = folder_01
 
-DEFINES += CUSTOMER_MEGATRONI
+#DEFINES += CUSTOMER_MEGATRONI
+RC_FILE = manager.rc
 
 QT += sql multimediawidgets widgets #qml quick sql opengl multimedia
 
@@ -36,11 +37,35 @@ macx {
   OUTPUT = $$OUT_PWD/$${TARGET}.app/Contents/MacOS/
 }
 
-LIBS += -lplxFW
+windows {
+  message(WINDOWS BUILD SELECTED)
+  INCLUDEPATH += ../
+  INCLUDEPATH += ../include
+  INCLUDEPATH += ../include/taglib
+  INCLUDEPATH += c:/usr/include
 
-CP_COMMAND = cp -r $${PWD}/java/* $$OUTPUT
-message(When building I will execute: $$CP_COMMAND)
-system($$CP_COMMAND)
+  LIBS += -Lc:/usr/lib
+#  LIBS += -L../lib/taglib
+#  LIBS += -L$$_PRO_FILE_PWD_/../lib/taglib
+#  message($$_PRO_FILE_PWD_/../lib/taglib)
+
+  CONFIG(release, debug|release) {
+    message(Release plxFramework Selected!)
+    LIBS += -L$$_PRO_FILE_PWD_/../build/plxFramework/Desktop_Qt_5_3_0_MinGW_32bit/release
+    message($$_PRO_FILE_PWD_/../build/plxFramework/Desktop_Qt_5_3_0_MinGW_32bit/release)
+  }
+  CONFIG(debug, debug|release) {
+    message(Debug plxFramework Selected!)
+    LIBS += -L$$_PRO_FILE_PWD_/../build/plxFramework/Desktop_Qt_5_3_0_MinGW_32bit/debug
+    message($$_PRO_FILE_PWD_/../build/plxFramework/Desktop_Qt_5_3_0_MinGW_32bit/debug)
+  }
+}
+
+LIBS += -lplxFW #-ltag
+
+#CP_COMMAND = cp -r $${PWD}/java/* $$OUTPUT
+#message(When building I will execute: $$CP_COMMAND)
+#system($$CP_COMMAND)
 
 # If your application uses the Qt Mobility libraries, uncomment the following
 # lines and add the respective components to the MOBILITY variable.
@@ -82,7 +107,7 @@ SOURCES += main.cpp \
     src/media/SongItem.cpp \
     src/frameworks/scraping/providers/plexusartist.cpp \
     src/managers/coverthread.cpp \
-    src/frameworks/scraping/providers/plexusalbum.cpp
+    src/frameworks/scraping/providers/plexusalbum.cpp \
 
 # Please do not modify the following two lines. Required for deployment.
 include(qtquick2applicationviewer/qtquick2applicationviewer.pri)
@@ -125,7 +150,9 @@ HEADERS += \
     src/media/SongItem.h \
     src/frameworks/scraping/providers/plexusartist.h \
     src/managers/coverthread.h \
-    src/frameworks/scraping/providers/plexusalbum.h
+    src/frameworks/scraping/providers/plexusalbum.h \
+#    src/core/AppSettings.h \
+#    src/frameworks/scraping/providers/provider.h \
 
 RESOURCES += \
     resources.qrc

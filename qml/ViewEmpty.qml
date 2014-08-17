@@ -210,7 +210,7 @@ Rectangle
         if (add_name.text != add_name.initialText && add_source.text != add_source.initialText){
           console.log("Adding Catalog: "+add_name.text+" - "+add_source.text);          
           application.selectCatalog(application.databaseManager.addCatalog(add_name.text, add_source.text));
-          loader_main.source = "Loading.qml"
+          loader_main.source = "qrc:/qml/Loading.qml"
         }
       }
     }
@@ -223,8 +223,9 @@ Rectangle
       property string dirPath
       onAccepted: {
           dirPath = fileDialog.fileUrl;
-          if (dirPath.substring(0,7) == "file://"){
-            dirPath = dirPath.substring(7)
+          console.log("Original Path = "+dirPath)
+          if (dirPath.substring(0,8) == "file:///"){//WINDOWS
+            dirPath = dirPath.substring(8)
           }
           add_source.text = dirPath;
           console.log("SELECTED: "+dirPath);
@@ -366,10 +367,10 @@ Rectangle
         textColor: "#FFFFFF"
         color: "#00CC00"
 
-        pixelSize: config.scalerSize(20)
+        pixelSize: config.scalerSize(16)
 
         onClicked:{
-          loader_main.source = "Loading.qml"
+          loader_main.source = "qrc:/qml/Loading.qml"
           application.selectCatalog(idCatalog)
         }
       }
@@ -391,7 +392,7 @@ Rectangle
         textColor: "#FFFFFF"
         color: "#CC0000"
 
-        pixelSize: config.scalerSize(20)
+        pixelSize: config.scalerSize(16)
 
         onClicked:{
           console.log("Removendo:"+idCatalog)

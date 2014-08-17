@@ -50,6 +50,7 @@ public:
   Q_INVOKABLE bool isCatalogSelected();
 
   void initialize();
+  void showProgressDialog();
 
   Q_PROPERTY(int progress READ progress WRITE loadingProgress NOTIFY progressChanged)
   int progress() { return m_iProgress; }
@@ -61,6 +62,7 @@ private:
   CCatalogsManager* m_catalogsManager;
   CTheAudioDB* adb;
   int m_iProgress;
+  int listQRC();
 
 signals:
   void loaded();
@@ -72,7 +74,10 @@ signals:
 private slots:
   void loadViews();
   void setUp();
+
+public slots:
   void loadingProgress(int i);
+  void updateSearchProgress(QString strMessage, QString strContent, int progress, int total);
 };
 
 #endif // APPLICATION_H

@@ -4,6 +4,8 @@
 #include <plxFramework/application/Settings.h>
 #include <plxFramework/utils/log.h>
 
+#include "Application.h"
+
 CCollectionManager* CCollectionManager::INSTANCE = 0;
 
 CCollectionManager::CCollectionManager(QObject *parent): QObject(parent)
@@ -141,33 +143,56 @@ void CCollectionManager::loadArtistView()
 
 int CCollectionManager::listAlbums()
 {
-  qDebug() << "Listing Albums";
-  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - BIG ONES.rcc");
-  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT OUTTAKES.rcc");
-  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT VACATION.rcc");
+  CApplication::instance()->showProgressDialog();
+
+  QString strDebug;
+  strDebug = "Listing Albums";
+  qDebug() << strDebug;
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - BIG ONES.rcc");
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT OUTTAKES.rcc");
+//  QResource::registerResource("/Volumes/MAC Externo/Jukebox/AEROSMITH - PERMANENT VACATION.rcc");
 
   QDirIterator it(":", QDirIterator::Subdirectories);
   while (it.hasNext()) {
-      qDebug() << it.next();
+    strDebug += "\n"+it.next();
   }
 
-  QFile f(":/AEROSMITH - PERMANENT VACATION/playlist.plx");
-  if (f.open(QFile::ReadOnly | QFile::Text))
-  {
-    QTextStream in(&f);
-    qDebug() << f.size() << in.readAll();
-    f.close();
-  }
+  //Save PLX file
+  QFile file ("c:\debug.txt");
+  if (!file.open(QFile::WriteOnly | QFile::Text)) return false;
+  QTextStream outstream(&file);
+  outstream << strDebug;
+  file.close();
+
+  qDebug() << strDebug;
+
+//  QFile f(":/AEROSMITH - PERMANENT VACATION/playlist.plx");
+//  if (f.open(QFile::ReadOnly | QFile::Text))
+//  {
+//    QTextStream in(&f);
+//    qDebug() << f.size() << in.readAll();
+//    f.close();
+//  }
 
 }
 
 int CCollectionManager::buildAlbums()
 {
+  CApplication::instance()->showProgressDialog();
+  CApplication::instance()->loadingProgress(0);
+
+  removeDir(CSettings::folder(CSettings::FOLDER_TEMP));
+
   qDebug() << "Building Albums";
   int count = 0;
 
   QList<CMediaItem*> mediaList;
-//  QString strSQL = m_musicDatabase->prepareSQL("SELECT idAlbum, strArtist, strAlbum FROM albumview where strArtist = '0' order by strArtist, strAlbum");
+
+  QSqlQuery queryCount("SELECT COUNT(idAlbum) FROM albumview", *m_musicDatabase->db());
+  queryCount.exec();
+  queryCount.first();
+  int total = queryCount.value(0).toInt();
+
   QString strSQL = m_musicDatabase->prepareSQL("SELECT idAlbum, strArtist, strAlbum FROM albumview order by strArtist, strAlbum");
   QSqlQuery query(strSQL, *m_musicDatabase->db());
   if (!query.exec()) return count;
@@ -182,7 +207,11 @@ int CCollectionManager::buildAlbums()
       mediaList.append(pAlbum);
       count++;
     }
+    QCoreApplication::processEvents();
+    CApplication::instance()->loadingProgress((50 * count) / total);
   }
+
+  count = 0;
 
   foreach (CMediaItem* mediaItem, mediaList) {
     rccBuild(mediaItem);
@@ -192,9 +221,13 @@ int CCollectionManager::buildAlbums()
     qDebug() << "plxFile: " + m_plxFile;
     qDebug() << "qrcFile: " + m_qrcFile;
     qDebug() << "rccFile: " + m_rccFile;
+    count++;
+    CApplication::instance()->loadingProgress(((50 * count) / total) + 50);
+    QCoreApplication::processEvents();
   }
 
   qDebug() << QString::number(count)+" Albums Builded";
+  CApplication::instance()->loadingProgress(100);
   return count;
 }
 
@@ -210,7 +243,7 @@ CMediaItem* CCollectionManager::albumBuild(int idAlbum){
   CArtist* pArtist = new CArtist();
   pArtist->moveToThread(qApp->thread());
   pArtist->setName(query.value(2).toString());
-  pArtist->fanart()->setImage(m_strStorageDir + "/fanarts/" + query.value(10).toString() );
+  pArtist->fanart()->setImage("file:///"+m_strStorageDir + "/fanarts/" + query.value(10).toString() );
   pMediaItem->setArtist(pArtist);
 
   CAlbum* pAlbum = new CAlbum();
@@ -220,7 +253,7 @@ CMediaItem* CCollectionManager::albumBuild(int idAlbum){
   pAlbum->setTitle(query.value(3));
   pAlbum->setYear(query.value(4));
   pAlbum->setGenre(query.value(5));
-  pAlbum->cover()->setThumb(m_strStorageDir + "/albums/" + query.value(8).toString() );
+  pAlbum->cover()->setThumb("file:///"+m_strStorageDir + "/albums/" + query.value(8).toString() );
   pAlbum->setSongs(songsBuild(idAlbum));
   pMediaItem->setAlbum(pAlbum);
 
@@ -364,6 +397,7 @@ bool CCollectionManager::qrcBuild(CMediaItem* mediaItem){
 
   //Save QRC file
   QString strQrcText(
+      "<?xml version=\"1.0\" encoding=\"iso-8859-1\" ?>\n"
       "<!DOCTYPE RCC><RCC version=\"1.0\">\n"
       "<qresource>\n");
       strQrcText += strFanartFileName == "" ? "" : "    <file>"+m_albumDir+"/"+strFanartFileName+"</file>\n";
@@ -389,6 +423,7 @@ bool CCollectionManager::rccBuild(CMediaItem* mediaItem){
   QString program = QCoreApplication::applicationDirPath() + "/rcc";
   QStringList arguments;
   arguments << "-binary" << "-no-compress" << m_qrcFile << "-o" << m_rccFile;
+  qDebug() << program << " " << arguments[0] << " " << arguments[1] << " " << arguments[2] << " " << arguments[3] << " " << arguments[4];
 
   QProcess rccProcess;
   rccProcess.start(program, arguments);
@@ -398,16 +433,25 @@ bool CCollectionManager::rccBuild(CMediaItem* mediaItem){
   return true;
 }
 
+bool CCollectionManager::removeDir(const QString & dirName)
+{
+    bool result = true;
+    QDir dir(dirName);
 
+    if (dir.exists(dirName)) {
+        Q_FOREACH(QFileInfo info, dir.entryInfoList(QDir::NoDotAndDotDot | QDir::System | QDir::Hidden  | QDir::AllDirs | QDir::Files, QDir::DirsFirst)) {
+            if (info.isDir()) {
+                result = removeDir(info.absoluteFilePath());
+            }
+            else {
+                result = QFile::remove(info.absoluteFilePath());
+            }
 
-
-
-
-
-
-
-
-
-
-
-
+            if (!result) {
+                return result;
+            }
+        }
+        result = dir.rmdir(dirName);
+    }
+    return result;
+}

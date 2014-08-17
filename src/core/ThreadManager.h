@@ -76,10 +76,10 @@ private slots:
   //    void PFCGenerationRunning();
 
   void coverSearchFinished();
-  void coverSearchProgress(int progress);
+  void coverSearchProgress(QString strMessage, QString strAlbum, int progress, int total);
 
   void fanartSearchFinished();
-  void fanartSearchProgress(int progress);
+  void fanartSearchProgress(QString strMessage, QString strArtist, int progress, int total);
 
 private:
   QThreadPool            *m_threadPool;          // QRunnable manager
